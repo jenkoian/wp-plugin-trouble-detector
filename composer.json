@@ -8,7 +8,6 @@
     },
     "require-dev": {
         "composer/composer": "^2.0",
-        "phpunit/phpunit": "^9.5",
         "wp-cpm/wp-lorem-ipsum": "@dev"
     },
     "license": "MIT",
