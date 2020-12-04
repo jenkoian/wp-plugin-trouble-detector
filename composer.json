@@ -1,0 +1,33 @@
+{
+    "name": "jenkoian/wp-plugin-trouble-detector",
+    "description": "A composer plugin to detect potential trouble with WordPress plugins installed via composer.",
+    "type": "composer-plugin",
+    "require": {
+        "php": ">=7.4",
+        "composer-plugin-api": "^1.0 || ^2.0"
+    },
+    "require-dev": {
+        "composer/composer": "^2.0",
+        "phpunit/phpunit": "^9.5",
+        "wp-cpm/wp-lorem-ipsum": "@dev"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ian Jenkins",
+            "email": "ian@jenko.me"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {"Jenko\\WpPluginTroubleDetector\\": "src"}
+    },
+    "autoload-dev": {
+        "psr-4": {"Jenko\\WpPluginTroubleDetector\\Tests\\": "tests"}
+    },
+    "scripts": {
+        "post-package-install": [
+            "Jenko\\WpPluginTroubleDetector\\WpPluginTroubleDetector::postPackageInstall"
+        ]
+    }
+}
