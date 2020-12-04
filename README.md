@@ -10,7 +10,7 @@ This is a composer plugin that will inspect the wordpress plugins you are instal
 
 ## Installation
 
-`composer req jenkoian/wp-plugin-trouble-detector --dev`
+`composer req jenko/wp-plugin-trouble-detector --dev`
 
 Add the following to your `scripts` section of `composer.json`
 
