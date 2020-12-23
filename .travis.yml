@@ -1,0 +1,21 @@
+language: php
+
+php:
+    - 5.6
+    - 7.4
+    - nightly
+
+cache:
+    directories:
+        - /home/travis/.composer/cache
+
+matrix:
+    allow_failures:
+        - php: 5.6
+        - php: nightly
+
+install:
+    - composer install --dev
+
+script:
+    - vendor/bin/phpunit
