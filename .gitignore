@@ -1,3 +1,4 @@
 vendor
 wp-content
 .phpunit.result.cache
+clover.xml
