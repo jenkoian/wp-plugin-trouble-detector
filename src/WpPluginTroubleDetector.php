@@ -3,16 +3,16 @@
 namespace Jenko\WpPluginTroubleDetector;
 
 use Composer\Installer\PackageEvent;
+use Composer\IO\IOInterface;
+use Composer\Package\Loader\JsonLoader;
+use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\PackageInterface;
 
 class WpPluginTroubleDetector
 {
-    /**
-     * @param PackageEvent $event
-     *
-     * @return mixed|void
-     */
-    public static function postPackageInstall(PackageEvent $event)
+    private const WPACKAGIST_PLUGIN_VENDOR_NAME = 'wpackagist-plugin';
+
+    public static function postPackageInstall(PackageEvent $event): void
     {
         /** @var PackageInterface $installedPackage */
         $mainPackage = $event->getComposer()->getPackage();
@@ -47,12 +47,31 @@ class WpPluginTroubleDetector
         }
 
         // Check to see if they have packages that match packages of the main project.
-        $matchingDeps = array_intersect($mainPackage->getRequires(), $installedPackage->getRequires()) !== false;
+        self::warnIfMatchingDeps($mainPackage, $installedPackage, $io);
+
+        // Do the same as the above but for wpackagist packages.
+        if (self::isWpackagistPackage($installedPackage)) {
+            // Is there a composer.json file present?
+            if (file_exists($pluginDir . '/composer.json')) {
+                $wpackagistPackage = WpackagistHelperFactory::get_instance()->getPackageFromComposerJson($event, $pluginDir);
+                self::warnIfMatchingDeps($mainPackage, $wpackagistPackage, $io);
+            }
+        }
+    }
+
+    private static function isWpackagistPackage(PackageInterface $installedPackage): bool
+    {
+        return strpos($installedPackage->getPrettyName(), self::WPACKAGIST_PLUGIN_VENDOR_NAME) !== false;
+    }
+
+    private static function warnIfMatchingDeps(PackageInterface $mainPackage, PackageInterface $packageToCompare, IOInterface $io): void
+    {
+        $matchingDeps = array_intersect(array_keys($mainPackage->getRequires()), array_keys($packageToCompare->getRequires())) !== [];
         if ($matchingDeps) {
             $io->writeError(
                 sprintf(
                     "<warning>Oh Shit %s shares some deps with you!! This could cause you some trouble.</warning>",
-                    $installedPackage->getPrettyName()
+                    $packageToCompare->getPrettyName()
                 )
             );
         }
