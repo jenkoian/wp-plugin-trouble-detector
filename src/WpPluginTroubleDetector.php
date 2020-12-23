@@ -31,7 +31,7 @@ class WpPluginTroubleDetector
             $name = $prettyName;
         }
 
-        $wpContentDir = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR : __DIR__ . '/../wp-content';
+        $wpContentDir = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR : getcwd() . '/wp-content';
         $pluginDir = $wpContentDir . '/plugins/' . $name;
 
         // Check to see if vendor directory has been committed by the plugin.
