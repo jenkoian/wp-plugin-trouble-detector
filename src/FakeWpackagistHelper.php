@@ -4,8 +4,6 @@ namespace Jenko\WpPluginTroubleDetector;
 
 use Composer\Installer\PackageEvent;
 use Composer\Package\Link;
-use Composer\Package\Loader\JsonLoader;
-use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\Package;
 use Composer\Package\PackageInterface;
 use Composer\Semver\Constraint\Constraint;

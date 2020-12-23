@@ -4,8 +4,6 @@ namespace Jenko\WpPluginTroubleDetector;
 
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
-use Composer\Package\Loader\JsonLoader;
-use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\PackageInterface;
 
 class WpPluginTroubleDetector

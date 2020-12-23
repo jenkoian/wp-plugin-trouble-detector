@@ -19,7 +19,7 @@ Add the following to your `scripts` section of `composer.json`
 ```json
     "scripts": {
         "post-package-install": [
-            "Jenko\\WpPluginTroubleDetector\\WpPluginTroubleDetector::postPackageInstall"
+            "Jenko\\WpPluginTroubleDetector\\Plugin::onPostPackageInstall"
         ]
     }
 ```
