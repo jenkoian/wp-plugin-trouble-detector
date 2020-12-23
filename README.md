@@ -1,4 +1,5 @@
 # WordPress Plugin Trouble Detector
+[![Build Status](https://travis-ci.com/jenkoian/wp-plugin-trouble-detector.svg?branch=main)](https://travis-ci.com/jenkoian/wp-plugin-trouble-detector)
 
 Installing WordPress plugins via composer? Worried about the trepidations of installing plugins and there being clashes between any dependencies and your own?
 
