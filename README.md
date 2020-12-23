@@ -13,8 +13,6 @@ This is a composer plugin that will inspect the wordpress plugins you are instal
 
 `composer req jenko/wp-plugin-trouble-detector --dev`
 
-> I haven't submitted to packagist yet so this won't work just yet, [you'll need to add the github repo for now](https://getcomposer.org/doc/05-repositories.md#loading-a-package-from-a-vcs-repository).
-
 ## Usage
 
 Composer install as usual, if any package has anything to be concerned about, you will see yellow warnings in the output.
