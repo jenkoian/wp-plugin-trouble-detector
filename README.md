@@ -31,4 +31,4 @@ Composer install as usual, if any package has anything to be concerned about, yo
 ## What it yells about
 
 * Plugin has a committed `vendor` directory
-* Plugin has third party dependencies which clash with yours
+* Plugin has third party dependencies which clash with yours (includes support for wpackagist plugins)
