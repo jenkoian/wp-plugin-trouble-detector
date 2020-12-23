@@ -2,6 +2,7 @@
 
 namespace Jenko\WpPluginTroubleDetector;
 
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\PackageEvent;
 use Composer\Package\Link;
 use Composer\Package\Package;
@@ -29,8 +30,8 @@ class FakeWpackagistHelper implements WpackagistHelperInterface
 
     public function getPackageFromComposerJson(PackageEvent $event, string $pluginDir): PackageInterface
     {
-        $packageName = $event->getOperation()->getPackage()->getName();
+        $package = $event->getOperation() instanceof UpdateOperation ? $event->getOperation()->getTargetPackage() : $event->getOperation()->getPackage();
 
-        return $this->getMockPackageWithDependency($packageName);
+        return $this->getMockPackageWithDependency($package->getName());
     }
 }

@@ -4,6 +4,7 @@ namespace Jenko\WpPluginTroubleDetector\Tests;
 
 use Composer\Composer;
 use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Package\Link;
@@ -26,7 +27,7 @@ class WpPluginTroubleDetectorTest extends TestCase
         }
     }
 
-    public function testDoesNotWriteErrorIfNotWordPressPlugin(): void
+    public function testInstallDoesNotWriteErrorIfNotWordPressPlugin(): void
     {
         $io = $this->createMock(IOInterface::class);
         $composer = $this->createMock(Composer::class);
@@ -45,7 +46,26 @@ class WpPluginTroubleDetectorTest extends TestCase
         WpPluginTroubleDetector::postPackageInstall($event);
     }
 
-    public function testWritesErrorIfDependencyHasVendorDir(): void
+    public function testUpdateDoesNotWriteErrorIfNotWordPressPlugin(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $updateOperation = $this->createMock(UpdateOperation::class);
+
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $installedPackage = new Package('b', '1.0.0', '1.0');
+
+        $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
+        $updateOperation->expects(self::once())->method('getTargetPackage')->willReturn($installedPackage);
+        $io->expects(self::never())->method('writeError');
+
+        $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testInstallWritesErrorIfDependencyHasVendorDir(): void
     {
         $io = $this->createMock(IOInterface::class);
         $composer = $this->createMock(Composer::class);
@@ -65,7 +85,27 @@ class WpPluginTroubleDetectorTest extends TestCase
         WpPluginTroubleDetector::postPackageInstall($event);
     }
 
-    public function testWritesErrorIfDependencyHasMatchingDeps(): void
+    public function testUpdateWritesErrorIfDependencyHasVendorDir(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $updateOperation = $this->createMock(UpdateOperation::class);
+
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $installedPackage = new Package('plugin-with-vendor-dir', '1.0.0', '1.0');
+        $installedPackage->setType('wordpress-plugin');
+
+        $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
+        $updateOperation->expects(self::once())->method('getTargetPackage')->willReturn($installedPackage);
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-vendor-dir has committed vendor directory!! This could cause you some trouble.</warning>');
+
+        $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testInstallWritesErrorIfDependencyHasMatchingDeps(): void
     {
         $io = $this->createMock(IOInterface::class);
         $composer = $this->createMock(Composer::class);
@@ -98,7 +138,40 @@ class WpPluginTroubleDetectorTest extends TestCase
         WpPluginTroubleDetector::postPackageInstall($event);
     }
 
-    public function testWritesErrorIfWpackagistDependencyHasMatchingDeps(): void
+    public function testUpdateWritesErrorIfDependencyHasMatchingDeps(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $updateOperation = $this->createMock(UpdateOperation::class);
+
+        $commonDependency = new Package('common-dependency', '1.0.0', '1.0');
+
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $mainPackage->setRequires(
+            [
+                $commonDependency->getName() => new Link($mainPackage->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        $installedPackage = new Package('plugin-with-matching-deps', '1.0.0', '1.0');
+        $installedPackage->setType('wordpress-plugin');
+        $installedPackage->setRequires(
+            [
+                $commonDependency->getName() => new Link($mainPackage->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
+        $updateOperation->expects(self::once())->method('getTargetPackage')->willReturn($installedPackage);
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+
+        $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testInstallWritesErrorIfWpackagistDependencyHasMatchingDeps(): void
     {
         $io = $this->createMock(IOInterface::class);
         $composer = $this->createMock(Composer::class);
@@ -122,6 +195,34 @@ class WpPluginTroubleDetectorTest extends TestCase
         $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit wpackagist-plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-install', $composer, $io, true, $localRepo, [], $installOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testUpdateWritesErrorIfWpackagistDependencyHasMatchingDeps(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $updateOperation = $this->createMock(UpdateOperation::class);
+
+        $commonDependency = new Package('common-dependency', '1.0.0', '1.0');
+
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $mainPackage->setRequires(
+            [
+                $commonDependency->getName() => new Link($mainPackage->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        $installedPackage = new Package('wpackagist-plugin-with-matching-deps', '1.0.0', '1.0');
+        $installedPackage->setType('wordpress-plugin');
+
+        $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
+        $updateOperation->method('getTargetPackage')->willReturn($installedPackage);
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit wpackagist-plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+
+        $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
 
         WpPluginTroubleDetector::postPackageInstall($event);
     }

@@ -2,6 +2,8 @@
 
 namespace Jenko\WpPluginTroubleDetector;
 
+use Composer\DependencyResolver\Operation\InstallOperation;
+use Composer\DependencyResolver\Operation\UpdateOperation;
 use Composer\Installer\PackageEvent;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
@@ -15,7 +17,7 @@ class WpPluginTroubleDetector
         /** @var PackageInterface $installedPackage */
         $mainPackage = $event->getComposer()->getPackage();
         /** @var PackageInterface $installedPackage */
-        $installedPackage = $event->getOperation()->getPackage();
+        $installedPackage = $event->getOperation() instanceof UpdateOperation ? $event->getOperation()->getTargetPackage() : $event->getOperation()->getPackage();
         $io = $event->getIO();
 
         if ($installedPackage->getType() !== 'wordpress-plugin') {

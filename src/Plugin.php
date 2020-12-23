@@ -33,10 +33,16 @@ class Plugin implements PluginInterface, EventSubscriberInterface
     {
         return [
             PackageEvents::POST_PACKAGE_INSTALL => 'onPostPackageInstall',
+            PackageEvents::POST_PACKAGE_UPDATE => 'onPostPackageUpdate',
         ];
     }
 
     public static function onPostPackageInstall(PackageEvent $event): void
+    {
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public static function onPostPackageUpdate(PackageEvent $event): void
     {
         WpPluginTroubleDetector::postPackageInstall($event);
     }

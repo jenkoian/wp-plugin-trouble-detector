@@ -31,6 +31,9 @@
     "scripts": {
         "post-package-install": [
             "Jenko\\WpPluginTroubleDetector\\Plugin::onPostPackageInstall"
+        ],
+        "post-package-update": [
+            "Jenko\\WpPluginTroubleDetector\\Plugin::onPostPackageInstall"
         ]
     }
 }
