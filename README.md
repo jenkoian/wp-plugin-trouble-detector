@@ -14,16 +14,6 @@ This is a composer plugin that will inspect the wordpress plugins you are instal
 
 > I haven't submitted to packagist yet so this won't work just yet, [you'll need to add the github repo for now](https://getcomposer.org/doc/05-repositories.md#loading-a-package-from-a-vcs-repository).
 
-Add the following to your `scripts` section of `composer.json`
-
-```json
-    "scripts": {
-        "post-package-install": [
-            "Jenko\\WpPluginTroubleDetector\\Plugin::onPostPackageInstall"
-        ]
-    }
-```
-
 ## Usage
 
 Composer install as usual, if any package has anything to be concerned about, you will see yellow warnings in the output.
@@ -32,3 +22,15 @@ Composer install as usual, if any package has anything to be concerned about, yo
 
 * Plugin has a committed `vendor` directory
 * Plugin has third party dependencies which clash with yours (includes support for wpackagist plugins)
+
+## Troubleshooting
+
+It should 'just work' but if for whatever reason it doesn't you may need to add the following to your `scripts` section of `composer.json`
+
+```json
+    "scripts": {
+        "post-package-install": [
+            "Jenko\\WpPluginTroubleDetector\\Plugin::onPostPackageInstall"
+        ]
+    }
+```
