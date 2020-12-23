@@ -1,0 +1,7 @@
+{
+  "name": "jenko/fake-plugin",
+  "type": "wordpress-plugin",
+  "require": {
+    "common-dependency": ">=1.0"
+  }
+}

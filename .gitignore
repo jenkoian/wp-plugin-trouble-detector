@@ -1,4 +1,6 @@
 vendor
 wp-content
+!tests/wp-content
+!tests/wp-content/plugins/plugin-with-vendor-dir/vendor
 .phpunit.result.cache
 clover.xml
