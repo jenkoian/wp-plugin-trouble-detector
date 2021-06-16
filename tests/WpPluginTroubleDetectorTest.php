@@ -78,7 +78,7 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $installOperation->expects(self::once())->method('getPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-vendor-dir has committed vendor directory!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-vendor-dir has a committed vendor directory!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-install', $composer, $io, true, $localRepo, [], $installOperation);
 
@@ -98,7 +98,7 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $updateOperation->expects(self::once())->method('getTargetPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-vendor-dir has committed vendor directory!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-vendor-dir has a committed vendor directory!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
 
@@ -131,7 +131,7 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $installOperation->expects(self::once())->method('getPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-matching-deps shares some deps with a!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-install', $composer, $io, true, $localRepo, [], $installOperation);
 
@@ -164,7 +164,7 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $updateOperation->expects(self::once())->method('getTargetPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-matching-deps shares some deps with a!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
 
@@ -192,7 +192,7 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $installOperation->method('getPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit wpackagist-plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap wpackagist-plugin-with-matching-deps shares some deps with a!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-install', $composer, $io, true, $localRepo, [], $installOperation);
 
@@ -220,7 +220,95 @@ class WpPluginTroubleDetectorTest extends TestCase
 
         $composer->expects(self::once())->method('getPackage')->willReturn($mainPackage);
         $updateOperation->method('getTargetPackage')->willReturn($installedPackage);
-        $io->expects(self::once())->method('writeError')->with('<warning>Oh Shit wpackagist-plugin-with-matching-deps shares some deps with you!! This could cause you some trouble.</warning>');
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap wpackagist-plugin-with-matching-deps shares some deps with a!! This could cause you some trouble.</warning>');
+
+        $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testInstallWritesErrorIfPluginSharesADependencyWithAnotherPlugin(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $installOperation = $this->createMock(InstallOperation::class);
+        
+        $commonDependency = new Package('common-dependency', '1.0.0', '1.0');
+
+        // Existing plugin with the common-dependency required.
+        $existingPluginDependency = new Package('existing-plugin-dependency', '1.0.0', '1.0');
+        $existingPluginDependency->setType('wordpress-plugin');
+        $existingPluginDependency->setRequires(
+            [
+                $commonDependency->getName() => new Link($existingPluginDependency->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+        
+        // Our main package with the existing-plugin-dependency required.
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $mainPackage->setRequires(
+            [
+                $existingPluginDependency->getName() => new Link($mainPackage->getName(), $existingPluginDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        // The package (plugin) we're trying to install with the common-dependency required.
+        $installedPackage = new Package('plugin-with-matching-deps', '1.0.0', '1.0');
+        $installedPackage->setType('wordpress-plugin');
+        $installedPackage->setRequires(
+            [
+                $commonDependency->getName() => new Link($mainPackage->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        $composer->expects(self::atLeastOnce())->method('getPackage')->willReturn($mainPackage);
+        $installOperation->expects(self::atLeastOnce())->method('getPackage')->willReturnOnConsecutiveCalls($installedPackage, $existingPluginDependency);
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-matching-deps shares some deps with existing-plugin-dependency!! This could cause you some trouble.</warning>');
+
+        $event = new PackageEvent('post-package-install', $composer, $io, true, $localRepo, [], $installOperation);
+
+        WpPluginTroubleDetector::postPackageInstall($event);
+    }
+
+    public function testUpdateWritesErrorIfPluginSharesADependencyWithAnotherPlugin(): void
+    {
+        $io = $this->createMock(IOInterface::class);
+        $composer = $this->createMock(Composer::class);
+        $localRepo = $this->createMock(RepositoryInterface::class);
+        $updateOperation = $this->createMock(UpdateOperation::class);
+
+        $commonDependency = new Package('common-dependency', '1.0.0', '1.0');
+
+        // Existing plugin with the common-dependency required.
+        $existingPluginDependency = new Package('existing-plugin-dependency', '1.0.0', '1.0');
+        $existingPluginDependency->setType('wordpress-plugin');
+        $existingPluginDependency->setRequires(
+            [
+                $commonDependency->getName() => new Link($existingPluginDependency->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        // Our main package with the existing-plugin-dependency required.
+        $mainPackage = new Package('a', '1.0.0', '1.0');
+        $mainPackage->setRequires(
+            [
+                $existingPluginDependency->getName() => new Link($mainPackage->getName(), $existingPluginDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        // The package (plugin) we're trying to install with the common-dependency required.
+        $installedPackage = new Package('plugin-with-matching-deps', '1.0.0', '1.0');
+        $installedPackage->setType('wordpress-plugin');
+        $installedPackage->setRequires(
+            [
+                $commonDependency->getName() => new Link($mainPackage->getName(), $commonDependency->getName(), new Constraint('>=', '1.0'))
+            ]
+        );
+
+        $composer->expects(self::atLeastOnce())->method('getPackage')->willReturn($mainPackage);
+        $updateOperation->expects(self::atLeastOnce())->method('getTargetPackage')->willReturnOnConsecutiveCalls($installedPackage, $existingPluginDependency);
+        $io->expects(self::once())->method('writeError')->with('<warning>Oh snap plugin-with-matching-deps shares some deps with existing-plugin-dependency!! This could cause you some trouble.</warning>');
 
         $event = new PackageEvent('post-package-update', $composer, $io, true, $localRepo, [], $updateOperation);
 

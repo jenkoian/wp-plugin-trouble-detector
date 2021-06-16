@@ -21,6 +21,7 @@ Composer install as usual, if any package has anything to be concerned about, yo
 
 * Plugin has a committed `vendor` directory
 * Plugin has third party dependencies which clash with yours (includes support for wpackagist plugins)
+* Plugin has third party dependencies which clash with dependencies of pre-existing plugins.
 
 ## Troubleshooting
 

@@ -7,7 +7,7 @@ use Composer\Package\Loader\JsonLoader;
 use Composer\Package\Loader\RootPackageLoader;
 use Composer\Package\PackageInterface;
 
-class WpackagistHelper implements WpackagistHelperInterface
+class ComposerPackageHelper implements ComposerPackageHelperInterface
 {
     public function getPackageFromComposerJson(PackageEvent $event, string $pluginDir): PackageInterface
     {
