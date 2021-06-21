@@ -8,7 +8,6 @@
     },
     "require-dev": {
         "composer/composer": "^2.0",
-        "wp-cpm/wp-lorem-ipsum": "@dev",
         "phpunit/phpunit": "^9.5"
     },
     "extra": {
@@ -21,7 +20,8 @@
             "email": "ian@jenko.me"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {"Jenko\\WpPluginTroubleDetector\\": "src"}
     },
